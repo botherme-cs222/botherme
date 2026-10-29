@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'notifications.dart';
+import 'messages_individual.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -51,6 +52,16 @@ class MessagesScreen extends StatelessWidget {
         ),
         itemBuilder: (context, index) {
           return ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => IndividualMessagesScreen(
+                    friendName: _names[index],
+                  ),
+                ),
+              );
+            },
             leading: const CircleAvatar(
               backgroundColor: Color(0xFFD9D9D9),
               radius: 14,
