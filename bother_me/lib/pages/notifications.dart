@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'messages.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -66,6 +67,24 @@ class NotificationScreen extends StatelessWidget {
             dense: true,
           ),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 3,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Friends'),
+          BottomNavigationBarItem(icon: Icon(Icons.message_outlined), label: 'Messages'),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: 'Notifications'),
+        ],
+        onTap: (index) {
+          if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const MessagesScreen()),
+            );
+          }
+        },
       ),
     );
   }
