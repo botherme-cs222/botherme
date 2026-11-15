@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
 import 'signup.dart';
-import 'notifications.dart';
+import 'homepage.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: LoginScreen(),
-  ));
-}
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -57,9 +51,11 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => const NotificationScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const HomePage(),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
