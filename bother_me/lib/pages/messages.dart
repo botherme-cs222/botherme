@@ -2,13 +2,7 @@ import 'package:flutter/material.dart';
 import 'notifications.dart';
 import 'messages_individual.dart';
 import 'friends_list.dart';
-
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: MessagesScreen(),
-  ));
-}
+import 'homepage.dart';
 
 class MessagesScreen extends StatelessWidget {
   const MessagesScreen({super.key});
@@ -93,19 +87,22 @@ class MessagesScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: 'Notifications'),
         ],
         onTap: (index) {
-          if (index == 1) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomePage()),
+            );
+          } else if (index == 1) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const FriendsList()),
             );
-          }
-          else if (index == 3) {
+          } else if (index == 3) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const NotificationScreen()),
             );
           }
-
         },
       ),
     );

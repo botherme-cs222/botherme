@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'messages.dart';
 import 'notifications.dart';
+import 'homepage.dart';
 
 class Friend {
   final String name;
@@ -151,7 +152,12 @@ class FriendsList extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: 'Notifications'),
         ],
         onTap: (index) {
-          if (index == 2) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomePage()),
+            );
+          } else if (index == 2) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const MessagesScreen()),

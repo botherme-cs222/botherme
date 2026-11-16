@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'homepage.dart'; // Destination screen after successful signup
 import 'package:firebase_auth/firebase_auth.dart';
-import 'notifications.dart'; // Destination screen after successful signup
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -40,9 +40,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
 
       if (mounted) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const NotificationScreen()),
+          MaterialPageRoute(
+            builder: (_) => const HomePage(),
+          ),
+          (route) => false,
         );
       }
     } on FirebaseAuthException catch (e) {
