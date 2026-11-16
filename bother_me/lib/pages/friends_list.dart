@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'messages.dart';
 import 'notifications.dart';
 import 'homepage.dart';
+import 'bother_request.dart';
 
 class Friend {
   final String name;
@@ -207,7 +208,16 @@ class _FriendTile extends StatelessWidget {
       ),
       subtitle: Text(friend.status, style: const TextStyle(fontSize: 11)),
       trailing: OutlinedButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BotherRequestScreen(
+                initialRecipient: friend.name,
+              ),
+            ),
+          );
+        },
         style: OutlinedButton.styleFrom(
           foregroundColor: const Color(0xFF6B4FA0),
           side: const BorderSide(color: Color(0xFF6B4FA0)),
