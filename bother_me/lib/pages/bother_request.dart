@@ -6,10 +6,12 @@ import 'notifications.dart';
 
 class BotherRequestScreen extends StatefulWidget {
   final String? initialRecipient;
+  final List<String>? initialRecipients;
 
   const BotherRequestScreen({
     super.key,
     this.initialRecipient,
+    this.initialRecipients,
   });
 
   @override
@@ -48,6 +50,9 @@ class _BotherRequestScreenState extends State<BotherRequestScreen> {
 
     if (widget.initialRecipient != null) {
       _selectedRecipients.add(widget.initialRecipient!);
+    }
+    if (widget.initialRecipients != null) {
+      _selectedRecipients.addAll(widget.initialRecipients!);
     }
   }
 

@@ -17,12 +17,14 @@ class Group {
   final int memberCount;
   final IconData icon;
   final Color color;
+  final List<Friend> members;
 
   const Group({
     required this.name,
     required this.memberCount,
     required this.icon,
     required this.color,
+    required this.members,
   });
 }
 
@@ -43,12 +45,20 @@ class FriendsList extends StatelessWidget {
       memberCount: 3,
       icon: Icons.people,
       color: Color(0xFF6B4FA0),
+      members: [
+        Friend(name: 'Friend 1', status: 'Free to hang out', online: true),
+        Friend(name: 'Friend 2', status: 'Studying until 6 pm', online: true),
+        Friend(name: 'Friend 3', status: 'Available to call', online: true),
+      ],
     ),
     Group(
       name: 'Family',
       memberCount: 2,
       icon: Icons.family_restroom,
       color: Color(0xFF2E8B73),
+      members: [
+        Friend(name: 'Friend 105', status: 'Busy', online: false),
+      ],
     ),
   ];
 
@@ -236,6 +246,95 @@ class _GroupTile extends StatelessWidget {
 
   const _GroupTile({required this.group});
 
+  void _showGroupSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      isScrollControlled: true,
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.55,
+          minChildSize: 0.35,
+          maxChildSize: 0.85,
+          builder: (_, scrollController) {
+            return Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Header row
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: group.color.withValues(alpha: 0.18),
+                        radius: 18,
+                        child: Icon(group.icon, size: 18, color: group.color),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          group.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BotherRequestScreen(
+                                initialRecipients: group.members.map((f) => f.name).toList(),
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.notifications_active_outlined, size: 15),
+                        label: const Text('Mass Bother', style: TextStyle(fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: group.color,
+                          side: BorderSide(color: group.color),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          minimumSize: const Size(0, 32),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                // Member list
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      const SizedBox(height: 4),
+                      ...group.members.map((friend) => _FriendTile(friend: friend)),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -259,7 +358,7 @@ class _GroupTile extends StatelessWidget {
           style: const TextStyle(fontSize: 11),
         ),
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: () {},
+        onTap: () => _showGroupSheet(context),
       ),
     );
   }
