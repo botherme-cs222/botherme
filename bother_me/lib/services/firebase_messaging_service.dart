@@ -1,4 +1,5 @@
 import 'package:bother_me/services/local_notifications_service.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class FirebaseMessagingService {
@@ -88,4 +89,16 @@ class FirebaseMessagingService {
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Background message received: ${message.data.toString()}');
+  // Ensure Firebase & Local Notifications are initialized in the background isolate
+  await Firebase.initializeApp();
+
+  final notificationData = message.notification;
+  final title = notificationData?.title ?? message.data['title'];
+  final body = notificationData?.body ?? message.data['body'];
+
+  if (title != null || body != null) {
+    final localNotificationsService = LocalNotificationsService.instance();
+    await localNotificationsService.init();
+    await localNotificationsService.showNotification(title, body, message.data.toString());
+  }
 }
