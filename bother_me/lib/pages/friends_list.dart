@@ -8,8 +8,14 @@ class Friend {
   final String name;
   final String status;
   final bool online;
+  final bool pending;
 
-  const Friend({required this.name, required this.status, this.online = false});
+  const Friend({
+    required this.name,
+    required this.status,
+    this.online = false,
+    this.pending = false,
+  });
 }
 
 class Group {
@@ -28,15 +34,81 @@ class Group {
   });
 }
 
-class FriendsList extends StatelessWidget {
+class FriendsList extends StatefulWidget {
   const FriendsList({super.key});
 
-  static const List<Friend> _friends = [
-    Friend(name: 'Friend 1', status: 'Free to hang out', online: true),
-    Friend(name: 'Friend 2', status: 'Studying until 6 pm', online: true),
-    Friend(name: 'Friend 3', status: 'Available to call', online: true),
-    Friend(name: 'Friend 4', status: 'Busy', online: false),
-    Friend(name: 'Friend 5', status: 'Last seen 1 day ago', online: false),
+  @override
+  State<FriendsList> createState() => _FriendsListState();
+
+}
+class _FriendsListState extends State<FriendsList> {
+  String _query = '';
+
+  final TextEditingController _addController = TextEditingController();
+
+  @override
+  void dispose() {
+    _addController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showAddFriendDialog() async {
+    _addController.clear();
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Add friend'),
+        content: TextField(
+          controller: _addController,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(hintText: 'Name or username'),
+          onSubmitted: (value) => Navigator.pop(dialogContext, value),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, _addController.text),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+
+    final trimmed = name?.trim() ?? '';
+    if (trimmed.isEmpty) return;
+
+    final alreadyFriends =
+        _friends.any((f) => f.name.toLowerCase() == trimmed.toLowerCase());
+    if (alreadyFriends) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$trimmed is already in your friends list')),
+      );
+      return;
+    }
+
+   setState(() {
+      _query = ''; // clear the search so the new friend is visible
+      _friends.add(Friend(
+        name: trimmed,
+        status: 'Need to accept friend request',
+        online: false,
+        pending: true,
+      ));
+    });
+  }
+
+  final List<Friend> _friends = [
+    Friend(name: 'Darth Vader', status: 'Free to hang out', online: true),
+    Friend(name: 'Darth Maul', status: 'Studying until 6 pm', online: true),
+    Friend(name: 'Ahsoka', status: 'Available to call', online: true),
+    Friend(name: 'Anakin Skywalker', status: 'Busy', online: false),
+    Friend(name: 'Senator Amidala', status: 'Last seen 1 day ago', online: false),
   ];
 
   static const List<Group> _groups = [
@@ -62,9 +134,13 @@ class FriendsList extends StatelessWidget {
     ),
   ];
 
-  @override
+ @override
   Widget build(BuildContext context) {
-    return Scaffold(
+  final filteredFriends = _friends
+      .where((f) => f.name.toLowerCase().contains(_query.toLowerCase().trim()))
+      .toList();
+
+  return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -80,6 +156,7 @@ class FriendsList extends StatelessWidget {
 
           // Search bar
           TextField(
+            onChanged: (value) => setState(() => _query = value),
             decoration: InputDecoration(
               hintText: 'Search friends',
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
@@ -95,7 +172,6 @@ class FriendsList extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Add friend row (not functional yet)
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const CircleAvatar(
@@ -109,7 +185,7 @@ class FriendsList extends StatelessWidget {
             ),
             subtitle: const Text('Find people by username', style: TextStyle(fontSize: 11)),
             trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-            onTap: () {},
+            onTap: _showAddFriendDialog,
           ),
           const Divider(),
 
@@ -144,13 +220,21 @@ class FriendsList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Text(
-              'My Friends (${_friends.length})',
+              'My Friends (${filteredFriends.length})',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
           ),
 
           // Friends
-          ..._friends.map((friend) => _FriendTile(friend: friend)),
+          if (filteredFriends.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text('No friends found', style: TextStyle(color: Colors.grey)),
+              ),
+            )
+          else
+            ...filteredFriends.map((friend) => _FriendTile(friend: friend)),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -217,26 +301,31 @@ class _FriendTile extends StatelessWidget {
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
       ),
       subtitle: Text(friend.status, style: const TextStyle(fontSize: 11)),
-      trailing: OutlinedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BotherRequestScreen(
-                initialRecipient: friend.name,
+      trailing: friend.pending
+          ? const Text(
+              'Pending',
+              style: TextStyle(fontSize: 11, color: Colors.grey),
+            )
+          : OutlinedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BotherRequestScreen(
+                      initialRecipient: friend.name,
+                    ),
+                  ),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF6B4FA0),
+                side: const BorderSide(color: Color(0xFF6B4FA0)),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                minimumSize: const Size(0, 30),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
+              child: const Text('Bother', style: TextStyle(fontSize: 11)),
             ),
-          );
-        },
-        style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFF6B4FA0),
-          side: const BorderSide(color: Color(0xFF6B4FA0)),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          minimumSize: const Size(0, 30),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-        child: const Text('Bother', style: TextStyle(fontSize: 11)),
-      ),
     );
   }
 }
