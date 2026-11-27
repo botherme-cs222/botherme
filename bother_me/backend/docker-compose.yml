@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: botherme
+      POSTGRES_PASSWORD: botherme
+      POSTGRES_DB: botherme
+    ports:
+      # host port 5433 so it doesn't clash with a locally installed Postgres on 5432
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      # Run in filename order on first start only (empty volume)
+      - ./schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+
+volumes:
+  db_data:
